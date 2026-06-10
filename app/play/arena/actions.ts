@@ -2,8 +2,9 @@
 
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service'
+import { buildOverrideMap, buildAffinityLabelMap } from '@/lib/game/resolveOverrides'
 import { simulateBattle, type BattleUnit } from '@/lib/game/battle'
-import type { Unit, PlayerUnit, Lineup, BattleResult, BattleRound, Rarity, OperatorUnitOverride } from '@/types/database'
+import type { Unit, PlayerUnit, Lineup, BattleResult, BattleRound, Rarity, Affinity } from '@/types/database'
 
 const AI_PLAYER_ID = 'ai-bot'
 const AI_NAMES = ['Shadow Bot', 'Iron Titan', 'Storm Runner', 'Frost Reaper', 'Ember Knight']
@@ -51,7 +52,7 @@ async function resolveLineup(
   })
 }
 
-export type UnitMeta = { image: string | null; rarity: Rarity }
+export type UnitMeta = { image: string | null; rarity: Rarity; name?: string | null }
 
 export type MatchActionResult =
   | {
@@ -63,6 +64,7 @@ export type MatchActionResult =
       opponentRoundsWon: number
       rounds: BattleRound[]
       unitMeta: Record<string, UnitMeta>
+      affinityLabels: Partial<Record<Affinity, string>>
       summary: string
     }
   | { ok: false; error: string }
@@ -166,25 +168,23 @@ export async function findMatch(): Promise<MatchActionResult> {
     ...new Set(outcome.rounds.flatMap((r) => [r.player_unit.id, r.opponent_unit.id])),
   ]
 
-  const [{ data: unitRows }, { data: overrideRows }] = await Promise.all([
-    supabase.from('units').select('id, image, rarity').in('id', allUnitIds),
-    supabase
-      .from('operator_unit_overrides')
-      .select('unit_id, image_override')
-      .eq('operator_id', operatorId)
-      .in('unit_id', allUnitIds),
-  ])
+  const { data: operatorRaw } = await supabase
+    .from('operators').select('theme_id').eq('id', operatorId).single()
+  const themeId = (operatorRaw as { theme_id: string | null } | null)?.theme_id ?? null
 
-  const overrideImgMap = new Map<string, string | null>()
-  for (const ov of (overrideRows ?? []) as Pick<OperatorUnitOverride, 'unit_id' | 'image_override'>[]) {
-    overrideImgMap.set(ov.unit_id, ov.image_override)
-  }
+  const [{ data: unitRows }, overrideMap, affinityLabelMap] = await Promise.all([
+    supabase.from('units').select('id, image, rarity').in('id', allUnitIds),
+    buildOverrideMap(supabase, operatorId, themeId),
+    buildAffinityLabelMap(supabase, themeId),
+  ])
 
   const unitMeta: Record<string, UnitMeta> = {}
   for (const u of (unitRows ?? []) as { id: string; image: string | null; rarity: Rarity }[]) {
+    const ov = overrideMap.get(u.id)
     unitMeta[u.id] = {
-      image: overrideImgMap.get(u.id) ?? u.image,
+      image: ov?.image ?? u.image,
       rarity: u.rarity,
+      name: ov?.name ?? null,
     }
   }
 
@@ -200,6 +200,7 @@ export async function findMatch(): Promise<MatchActionResult> {
     opponentRoundsWon: outcome.opponentRoundsWon,
     rounds: outcome.rounds,
     unitMeta,
+    affinityLabels: Object.fromEntries(affinityLabelMap) as Partial<Record<Affinity, string>>,
     summary: `${resultLabel} — ${outcome.playerRoundsWon}–${outcome.opponentRoundsWon} vs ${opponentName}`,
   }
 }

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { BattleReplay } from '@/app/play/arena/BattleReplay'
-import type { BattleRound, BattleResult } from '@/types/database'
+import type { BattleRound, BattleResult, Affinity } from '@/types/database'
 import type { UnitMeta } from '@/app/play/arena/actions'
 
 export function WatchClient({
@@ -11,6 +11,7 @@ export function WatchClient({
   result,
   rounds,
   unitMeta,
+  affinityLabels = {},
   playerRoundsWon,
   opponentRoundsWon,
 }: {
@@ -19,6 +20,7 @@ export function WatchClient({
   result: BattleResult
   rounds: BattleRound[]
   unitMeta: Record<string, UnitMeta>
+  affinityLabels?: Partial<Record<Affinity, string>>
   playerRoundsWon: number
   opponentRoundsWon: number
 }) {
@@ -31,6 +33,7 @@ export function WatchClient({
       result={result}
       rounds={rounds}
       unitMeta={unitMeta}
+      affinityLabels={affinityLabels}
       playerRoundsWon={playerRoundsWon}
       opponentRoundsWon={opponentRoundsWon}
       onClose={() => router.push('/play')}

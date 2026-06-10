@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import type { BattleRound, BattleResult, Affinity, Rarity } from '@/types/database'
 import type { UnitMeta } from './actions'
+type AffinityLabels = Partial<Record<Affinity, string>>
 import { cn } from '@/lib/utils'
 
 // ── Configs ───────────────────────────────────────────────────────────────────
@@ -76,16 +77,19 @@ function ArenaCard({
   meta,
   won,
   lost,
+  affinityLabels = {},
 }: {
   unit: BattleRound['player_unit']
   meta: UnitMeta | undefined
   won: boolean
   lost: boolean
+  affinityLabels?: AffinityLabels
 }) {
   const rarity: Rarity = meta?.rarity ?? 'Common'
   const r = RARITY_CFG[rarity]
   const aff = AFF[unit.affinity]
   const AffinityIcon = aff.icon
+  const affLabel = affinityLabels[unit.affinity] ?? unit.affinity
 
   return (
     <div
@@ -103,7 +107,7 @@ function ArenaCard({
       <div className="flex items-center justify-between px-2 pt-1.5 pb-1">
         <span className={cn('inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold border', aff.bg)}>
           <AffinityIcon className={cn('size-2.5', aff.color)} />
-          <span className={aff.color}>{unit.affinity}</span>
+          <span className={aff.color}>{affLabel}</span>
         </span>
         <span className="text-[9px] font-bold text-zinc-500">Lv{unit.level}</span>
       </div>
@@ -129,7 +133,7 @@ function ArenaCard({
 
       {/* Name */}
       <p className={cn('text-center text-[11px] font-black px-1 pt-1 pb-0.5 truncate', r.nameColor)}>
-        {unit.name}
+        {meta?.name ?? unit.name}
       </p>
 
       {/* Stats */}
@@ -195,7 +199,7 @@ function DeckThumb({
         </div>
       </div>
       <div className={cn('px-1 py-0.5', r.cardBg)}>
-        <p className="text-[8px] font-bold text-white truncate text-center">{unit.name}</p>
+        <p className="text-[8px] font-bold text-white truncate text-center">{meta?.name ?? unit.name}</p>
       </div>
     </button>
   )
@@ -208,11 +212,13 @@ function RoundScene({
   unitMeta,
   isLast,
   onNext,
+  affinityLabels = {},
 }: {
   round: BattleRound
   unitMeta: Record<string, UnitMeta>
   isLast: boolean
   onNext: () => void
+  affinityLabels?: AffinityLabels
 }) {
   const [showCards, setShowCards] = useState(false)
   const [showScore, setShowScore] = useState(false)
@@ -238,7 +244,7 @@ function RoundScene({
       {/* Cards */}
       <div className="flex items-end gap-4">
         <div className={cn('transition-all duration-500', showCards ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-24')}>
-          <ArenaCard unit={round.player_unit} meta={unitMeta[round.player_unit.id]} won={playerWon} lost={opponentWon} />
+          <ArenaCard unit={round.player_unit} meta={unitMeta[round.player_unit.id]} won={playerWon} lost={opponentWon} affinityLabels={affinityLabels} />
         </div>
 
         <div className="flex flex-col items-center gap-2 pb-4">
@@ -248,7 +254,7 @@ function RoundScene({
         </div>
 
         <div className={cn('transition-all duration-500', showCards ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-24')}>
-          <ArenaCard unit={round.opponent_unit} meta={unitMeta[round.opponent_unit.id]} won={opponentWon} lost={playerWon} />
+          <ArenaCard unit={round.opponent_unit} meta={unitMeta[round.opponent_unit.id]} won={opponentWon} lost={playerWon} affinityLabels={affinityLabels} />
         </div>
       </div>
 
@@ -291,8 +297,8 @@ function RoundScene({
         {(round.player_affinity_bonus > 0 || round.opponent_affinity_bonus > 0) && (
           <p className="text-center text-[10px] text-amber-500/70 mt-1.5">
             {round.player_affinity_bonus > 0
-              ? `${round.player_unit.affinity} has advantage over ${round.opponent_unit.affinity}`
-              : `${round.opponent_unit.affinity} has advantage over ${round.player_unit.affinity}`}
+              ? `${affinityLabels[round.player_unit.affinity] ?? round.player_unit.affinity} has advantage over ${affinityLabels[round.opponent_unit.affinity] ?? round.opponent_unit.affinity}`
+              : `${affinityLabels[round.opponent_unit.affinity] ?? round.opponent_unit.affinity} has advantage over ${affinityLabels[round.player_unit.affinity] ?? round.player_unit.affinity}`}
           </p>
         )}
       </div>
@@ -333,6 +339,7 @@ export interface ReplayProps {
   result: BattleResult
   rounds: BattleRound[]
   unitMeta: Record<string, UnitMeta>
+  affinityLabels?: AffinityLabels
   playerRoundsWon: number
   opponentRoundsWon: number
   onClose: () => void
@@ -342,6 +349,7 @@ export interface ReplayProps {
 
 export function BattleReplay({
   playerName, opponentName, result, rounds, unitMeta,
+  affinityLabels = {},
   playerRoundsWon, opponentRoundsWon, onClose, inPage = false,
 }: ReplayProps) {
   const [roundIdx, setRoundIdx] = useState(0)
@@ -483,6 +491,7 @@ export function BattleReplay({
             unitMeta={unitMeta}
             isLast={roundIdx === rounds.length - 1}
             onNext={handleNext}
+            affinityLabels={affinityLabels}
           />
         )}
 

@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
 import { getSession } from '@/app/play/lib/session'
 import { createServiceClient } from '@/lib/supabase/service'
-import { buildOverrideMap } from '@/lib/game/resolveOverrides'
-import type { BattleLog, Rarity } from '@/types/database'
+import { buildOverrideMap, buildAffinityLabelMap } from '@/lib/game/resolveOverrides'
+import type { BattleLog, Rarity, Affinity } from '@/types/database'
 import type { UnitMeta } from '@/app/play/arena/actions'
 import { WatchClient } from './WatchClient'
 
@@ -38,11 +38,12 @@ export default async function WatchPage({
     .from('operators').select('theme_id').eq('id', session.operatorId).single()
   const themeId = (operatorRaw as { theme_id: string | null } | null)?.theme_id ?? null
 
-  const [{ data: unitRows }, overrideMap] = await Promise.all([
+  const [{ data: unitRows }, overrideMap, affinityLabelMap] = await Promise.all([
     allUnitIds.length > 0
       ? supabase.from('units').select('id, image, rarity').in('id', allUnitIds)
       : Promise.resolve({ data: [] }),
     buildOverrideMap(supabase, session.operatorId, themeId),
+    buildAffinityLabelMap(supabase, themeId),
   ])
 
   const unitMeta: Record<string, UnitMeta> = {}
@@ -51,6 +52,7 @@ export default async function WatchPage({
     unitMeta[u.id] = {
       image: ov?.image ?? u.image,
       rarity: u.rarity,
+      name: ov?.name ?? null,
     }
   }
 
@@ -64,6 +66,7 @@ export default async function WatchPage({
       result={log.result}
       rounds={log.rounds}
       unitMeta={unitMeta}
+      affinityLabels={Object.fromEntries(affinityLabelMap) as Partial<Record<Affinity, string>>}
       playerRoundsWon={playerRoundsWon}
       opponentRoundsWon={opponentRoundsWon}
     />

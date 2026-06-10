@@ -450,7 +450,7 @@ export function LobbyClient({
               </div>
               <div
                 ref={cardsScrollRef}
-                className="flex gap-2.5 overflow-x-auto scrollbar-none pb-1"
+                className="flex gap-2.5 overflow-x-auto scrollbar-none pb-3 -mx-4 px-4"
                 style={{ scrollSnapType: 'x mandatory' }}
               >
                 {ownedCards.map((card) => (

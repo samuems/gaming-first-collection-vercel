@@ -8,7 +8,7 @@ import {
   Swords, Trophy, X, RotateCcw, ChevronDown, ChevronUp,
   Sword, Timer, Zap, Bot,
 } from 'lucide-react'
-import type { BattleRound, BattleResult } from '@/types/database'
+import type { BattleRound, BattleResult, Affinity } from '@/types/database'
 import { cn } from '@/lib/utils'
 import { findMatch, type UnitMeta } from './actions'
 import { BattleReplay } from './BattleReplay'
@@ -21,6 +21,7 @@ interface MatchResult {
   opponentRoundsWon: number
   rounds: BattleRound[]
   unitMeta: Record<string, UnitMeta>
+  affinityLabels: Partial<Record<Affinity, string>>
   summary: string
 }
 
@@ -134,6 +135,7 @@ export function BattleArena({
         result={match.result}
         rounds={match.rounds}
         unitMeta={match.unitMeta}
+        affinityLabels={match.affinityLabels}
         playerRoundsWon={match.playerRoundsWon}
         opponentRoundsWon={match.opponentRoundsWon}
         onClose={() => setShowReplay(false)}
