@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { requireSession } from '../lib/session'
 import { createServiceClient } from '@/lib/supabase/service'
-import { buildOverrideMap } from '@/lib/game/resolveOverrides'
+import { buildOverrideMap, buildAffinityLabelMap } from '@/lib/game/resolveOverrides'
 import type { Unit, PlayerUnit, Rarity, Affinity } from '@/types/database'
 import { COPIES_FOR_LEVEL } from '@/lib/game/progression'
 import { CollectionGrid, type CollectionUnit } from './CollectionGrid'
@@ -34,6 +34,7 @@ export default async function CollectionPage({
     { data: unitsRaw },
     { data: puRaw },
     overrideMap,
+    affinityLabelMap,
   ] = await Promise.all([
     supabase.from('units').select('*').order('name'),
     supabase
@@ -42,7 +43,10 @@ export default async function CollectionPage({
       .eq('operator_id', session.operatorId)
       .eq('player_id', session.playerId),
     buildOverrideMap(supabase, session.operatorId, themeId),
+    buildAffinityLabelMap(supabase, themeId),
   ])
+
+  const affinityLabels = Object.fromEntries(affinityLabelMap) as Partial<Record<Affinity, string>>
 
   const units = (unitsRaw ?? []) as Unit[]
   const playerUnits = (puRaw ?? []) as PlayerUnit[]
@@ -193,6 +197,7 @@ export default async function CollectionPage({
           units={collectionUnits}
           ownedCount={ownedCount}
           totalCount={totalCount}
+          affinityLabels={affinityLabels}
         />
       </div>
 

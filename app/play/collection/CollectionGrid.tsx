@@ -101,13 +101,16 @@ const RARITY_LABEL: Record<Rarity, string> = {
 function UnitCardThumb({
   unit,
   onClick,
+  affinityLabels,
 }: {
   unit: CollectionUnit
   onClick: () => void
+  affinityLabels: Partial<Record<Affinity, string>>
 }) {
   const r = RARITY_CFG[unit.rarity]
   const a = AFFINITY_CFG[unit.affinity]
   const AffinityIcon = a.icon
+  const affLabel = affinityLabels[unit.affinity] ?? unit.affinity
 
   return (
     <article
@@ -123,7 +126,7 @@ function UnitCardThumb({
       <div className="flex items-center justify-between px-2 pt-1.5 pb-1">
         <span className={cn('inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold', a.bg)}>
           <AffinityIcon className={cn('size-2.5', a.color)} />
-          <span className={a.color}>{unit.affinity}</span>
+          <span className={a.color}>{affLabel}</span>
         </span>
         {unit.owned && unit.level > 1 && (
           <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-400">
@@ -182,16 +185,19 @@ function CardDetailSheet({
   unit,
   open,
   onClose,
+  affinityLabels,
 }: {
   unit: CollectionUnit | null
   open: boolean
   onClose: () => void
+  affinityLabels: Partial<Record<Affinity, string>>
 }) {
   if (!unit) return null
 
   const r = RARITY_CFG[unit.rarity]
   const a = AFFINITY_CFG[unit.affinity]
   const AffinityIcon = a.icon
+  const affLabel = affinityLabels[unit.affinity] ?? unit.affinity
 
   const copiesNeeded = unit.copiesForNextLevel
   const copyPct = copiesNeeded ? Math.round((unit.copiesOwned / copiesNeeded) * 100) : 100
@@ -227,7 +233,7 @@ function CardDetailSheet({
             <div className="flex items-center gap-2">
               <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold', a.bg)}>
                 <AffinityIcon className={cn('size-3', a.color)} />
-                <span className={a.color}>{unit.affinity}</span>
+                <span className={a.color}>{affLabel}</span>
               </span>
               <Badge variant="outline" className="text-xs text-zinc-400 border-zinc-700">
                 Season {unit.season}
@@ -297,10 +303,12 @@ export function CollectionGrid({
   units,
   ownedCount,
   totalCount,
+  affinityLabels = {},
 }: {
   units: CollectionUnit[]
   ownedCount: number
   totalCount: number
+  affinityLabels?: Partial<Record<Affinity, string>>
 }) {
   const [selected, setSelected] = useState<CollectionUnit | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -324,6 +332,7 @@ export function CollectionGrid({
             key={unit.unitId}
             unit={unit}
             onClick={() => handleCardClick(unit)}
+            affinityLabels={affinityLabels}
           />
         ))}
       </div>
@@ -333,6 +342,7 @@ export function CollectionGrid({
         unit={selected}
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
+        affinityLabels={affinityLabels}
       />
     </>
   )
