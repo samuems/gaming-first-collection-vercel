@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(try { Invoke-WebRequest -Uri \"https://api-inference.huggingface.co\" -Method HEAD -TimeoutSec 10 -ErrorAction Stop | Select-Object StatusCode } catch { $_.Exception.Message })"
+    ]
+  }
+}

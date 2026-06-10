@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(try { Invoke-WebRequest -Uri \"https://router.huggingface.co\" -Method HEAD -TimeoutSec 10 -ErrorAction Stop | Select-Object StatusCode } catch { $_.Exception.Message })",
+      "PowerShell(cd \"c:\\\\Users\\\\home\\\\gaming-first-collection\"; Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"npm run dev\" -WindowStyle Normal)",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\home\\\\gaming-first-collection\" -Recurse -Directory | Where-Object { $_.Name -in @\\('slottiles','logo','slots','tiles'\\) } | Select-Object FullName)",
+      "PowerShell($slots = Get-ChildItem \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\\\\SlotTiles\"; Write-Host \"SlotTiles count: $\\($slots.Count\\)\"; $logo = Get-ChildItem \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\\\\Logo\"; Write-Host \"Logo count: $\\($logo.Count\\)\"; $logo | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\" -Recurse -File | Where-Object { $_.Extension -in @\\('.png','.jpg','.jpeg','.webp','.svg'\\) } | Select-Object Name, DirectoryName | Sort-Object DirectoryName, Name)",
+      "PowerShell(Rename-Item \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\\\\Logo\\\\Logo \\(3\\).png\" \"logo.png\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\home\\gaming-first-collection\\app\\play\\arena\\watch"
+    ]
+  }
+}
