@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { requireSession } from '../lib/session'
 import { createServiceClient } from '@/lib/supabase/service'
-import type { Unit, PlayerUnit, OperatorUnitOverride, Rarity, Affinity } from '@/types/database'
+import { buildOverrideMap } from '@/lib/game/resolveOverrides'
+import type { Unit, PlayerUnit, Rarity, Affinity } from '@/types/database'
 import { COPIES_FOR_LEVEL } from '@/lib/game/progression'
 import { CollectionGrid, type CollectionUnit } from './CollectionGrid'
 import { Badge } from '@/components/ui/badge'
@@ -25,10 +26,14 @@ export default async function CollectionPage({
 
   const supabase = createServiceClient()
 
+  const { data: operatorRaw } = await supabase
+    .from('operators').select('theme_id').eq('id', session.operatorId).single()
+  const themeId = (operatorRaw as { theme_id: string | null } | null)?.theme_id ?? null
+
   const [
     { data: unitsRaw },
     { data: puRaw },
-    { data: overridesRaw },
+    overrideMap,
   ] = await Promise.all([
     supabase.from('units').select('*').order('name'),
     supabase
@@ -36,21 +41,14 @@ export default async function CollectionPage({
       .select('*')
       .eq('operator_id', session.operatorId)
       .eq('player_id', session.playerId),
-    supabase
-      .from('operator_unit_overrides')
-      .select('*')
-      .eq('operator_id', session.operatorId),
+    buildOverrideMap(supabase, session.operatorId, themeId),
   ])
 
   const units = (unitsRaw ?? []) as Unit[]
   const playerUnits = (puRaw ?? []) as PlayerUnit[]
-  const overrides = (overridesRaw ?? []) as OperatorUnitOverride[]
 
   const puMap = new Map<string, PlayerUnit>()
   for (const pu of playerUnits) puMap.set(pu.unit_id, pu)
-
-  const overrideMap = new Map<string, OperatorUnitOverride>()
-  for (const ov of overrides) overrideMap.set(ov.unit_id, ov)
 
   let collectionUnits: CollectionUnit[] = units.map((unit) => {
     const pu = puMap.get(unit.id)
@@ -58,8 +56,8 @@ export default async function CollectionPage({
     const level = pu?.level ?? 1
     return {
       unitId: unit.id,
-      name: ov?.name_override ?? unit.name,
-      image: ov?.image_override ?? unit.image,
+      name: ov?.name ?? unit.name,
+      image: ov?.image ?? unit.image,
       rarity: unit.rarity,
       affinity: unit.affinity,
       season: unit.season,

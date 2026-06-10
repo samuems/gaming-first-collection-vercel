@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { requireSession } from '../lib/session'
 import { createServiceClient } from '@/lib/supabase/service'
-import type { Unit, PlayerUnit, OperatorUnitOverride, Lineup } from '@/types/database'
+import { buildOverrideMap } from '@/lib/game/resolveOverrides'
+import type { Unit, PlayerUnit, Lineup } from '@/types/database'
 import { LineupBuilder, type LineupUnit } from './LineupBuilder'
 import { Shield, Swords } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -12,11 +13,15 @@ export default async function LineupPage() {
   const session = await requireSession()
   const supabase = createServiceClient()
 
+  const { data: operatorRaw } = await supabase
+    .from('operators').select('theme_id').eq('id', session.operatorId).single()
+  const themeId = (operatorRaw as { theme_id: string | null } | null)?.theme_id ?? null
+
   const [
     { data: puRaw },
     { data: lineupRaw },
-    { data: overridesRaw },
     { data: unitsRaw },
+    overrideMap,
   ] = await Promise.all([
     supabase
       .from('player_units')
@@ -29,20 +34,13 @@ export default async function LineupPage() {
       .eq('operator_id', session.operatorId)
       .eq('player_id', session.playerId)
       .single(),
-    supabase
-      .from('operator_unit_overrides')
-      .select('*')
-      .eq('operator_id', session.operatorId),
     supabase.from('units').select('*'),
+    buildOverrideMap(supabase, session.operatorId, themeId),
   ])
 
   const playerUnits = (puRaw ?? []) as PlayerUnit[]
   const lineup = lineupRaw as Lineup | null
-  const overrides = (overridesRaw ?? []) as OperatorUnitOverride[]
   const allUnits = (unitsRaw ?? []) as Unit[]
-
-  const overrideMap = new Map<string, OperatorUnitOverride>()
-  for (const ov of overrides) overrideMap.set(ov.unit_id, ov)
 
   const unitMap = new Map<string, Unit>()
   for (const u of allUnits) unitMap.set(u.id, u)
@@ -54,8 +52,8 @@ export default async function LineupPage() {
       const ov = overrideMap.get(unit.id)
       return {
         unitId: unit.id,
-        name: ov?.name_override ?? unit.name,
-        image: ov?.image_override ?? unit.image,
+        name: ov?.name ?? unit.name,
+        image: ov?.image ?? unit.image,
         rarity: unit.rarity,
         affinity: unit.affinity,
         level: pu.level,
