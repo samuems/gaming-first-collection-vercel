@@ -3,6 +3,20 @@
 import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service'
 
+export async function setOperatorTheme(formData: FormData): Promise<void> {
+  const operatorId = (formData.get('operatorId') as string | null)?.trim()
+  const themeId    = (formData.get('themeId')    as string | null)?.trim() || null
+  if (!operatorId) return
+
+  const supabase = createServiceClient()
+  await (supabase as any)
+    .from('operators')
+    .update({ theme_id: themeId })
+    .eq('id', operatorId)
+
+  revalidatePath('/admin/theme')
+}
+
 export async function upsertOverride(formData: FormData): Promise<void> {
   const operatorId = (formData.get('operatorId') as string | null)?.trim()
   const unitId = (formData.get('unitId') as string | null)?.trim()

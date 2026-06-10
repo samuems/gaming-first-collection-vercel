@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service'
-import type { Operator, Unit, OperatorUnitOverride } from '@/types/database'
+import type { Operator, Unit, OperatorUnitOverride, Theme } from '@/types/database'
 import {
   Card,
   CardContent,
@@ -19,10 +19,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { CheckCircle2, Palette } from 'lucide-react'
+import { CheckCircle2, Layers, Palette } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { upsertOverride } from './actions'
+import { upsertOverride, setOperatorTheme } from './actions'
 
 export const revalidate = 0
 
@@ -44,13 +44,14 @@ export default async function ThemePage({
 
   const supabase = createServiceClient()
 
-  // Fetch all operators
-  const { data: operatorsData } = await supabase
-    .from('operators')
-    .select('*')
-    .order('created_at', { ascending: true })
+  // Fetch all operators + all themes in parallel
+  const [{ data: operatorsData }, { data: themesData }] = await Promise.all([
+    supabase.from('operators').select('*').order('created_at', { ascending: true }),
+    supabase.from('themes').select('*').order('name'),
+  ])
 
   const operators = (operatorsData ?? []) as Operator[]
+  const themes    = (themesData    ?? []) as Theme[]
 
   // Resolve selected operator — default to first
   const selectedOperator =
@@ -123,6 +124,47 @@ export default async function ThemePage({
         <p className="text-sm text-muted-foreground">
           No operators found. Create an operator first.
         </p>
+      )}
+
+      {/* Active Theme selector */}
+      {selectedOperator && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Layers className="size-4 text-muted-foreground" />
+              <CardTitle className="text-sm">Active Theme — {selectedOperator.name}</CardTitle>
+              {selectedOperator.theme_id && (
+                <Badge className="ml-auto text-xs">
+                  {themes.find((t) => t.id === selectedOperator.theme_id)?.name ?? 'Unknown'}
+                </Badge>
+              )}
+            </div>
+            <CardDescription className="text-xs">
+              Select a theme template to apply its unit overrides.{' '}
+              <Link href="/admin/themes" className="underline underline-offset-2">
+                Manage theme templates →
+              </Link>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={setOperatorTheme} className="flex items-center gap-3">
+              <input type="hidden" name="operatorId" value={selectedOperator.id} />
+              <select
+                name="themeId"
+                defaultValue={selectedOperator.theme_id ?? ''}
+                className="h-8 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">— No theme —</option>
+                {themes.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+              <Button type="submit" size="sm" className="h-8 text-xs">
+                Set Theme
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
       {/* What never changes */}

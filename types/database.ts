@@ -26,7 +26,28 @@ export interface Operator {
   name: string;
   api_key: string;
   status: OperatorStatus;
+  theme_id: string | null;
   created_at: string;
+}
+
+export interface Theme {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface ThemeUnitOverride {
+  theme_id: string;
+  unit_id: string;
+  name_override: string | null;
+  image_override: string | null;
+}
+
+export interface ThemeAffinityOverride {
+  theme_id: string;
+  affinity: string;
+  label: string;
 }
 
 export interface Unit {

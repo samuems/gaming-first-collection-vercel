@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api/auth";
 import { createServiceClient } from "@/lib/supabase/service";
 import { COPIES_FOR_LEVEL } from "@/lib/game/progression";
-import type { Unit, PlayerUnit, OperatorUnitOverride } from "@/types/database";
+import { buildOverrideMap, buildAffinityLabelMap } from "@/lib/game/resolveOverrides";
+import type { Unit, PlayerUnit } from "@/types/database";
 
 // ── Starter pack ──────────────────────────────────────────────────────────────
 // New players automatically receive 5 random Common units on first collection
@@ -97,16 +98,11 @@ export async function GET(req: NextRequest) {
     (a, b) => (rarityOrder[a.rarity] ?? 9) - (rarityOrder[b.rarity] ?? 9)
   );
 
-  // ── 2. Fetch operator theme overrides ─────────────────────────────────────
-  const { data: overridesRaw } = await supabase
-    .from("operator_unit_overrides")
-    .select("*")
-    .eq("operator_id", operator.id);
-
-  const overrideMap = new Map<string, OperatorUnitOverride>();
-  for (const o of (overridesRaw ?? []) as OperatorUnitOverride[]) {
-    overrideMap.set(o.unit_id, o);
-  }
+  // ── 2. Build effective override map + affinity labels ────────────────────
+  const [overrideMap, affinityLabelMap] = await Promise.all([
+    buildOverrideMap(supabase, operator.id, operator.theme_id),
+    buildAffinityLabelMap(supabase, operator.theme_id),
+  ]);
 
   // ── 3. Fetch player collection (auto-init if first visit) ─────────────────
   const { data: existingRaw } = await supabase
@@ -136,8 +132,8 @@ export async function GET(req: NextRequest) {
 
     return {
       unitId: unit.id,
-      name: override?.name_override ?? unit.name,
-      image: override?.image_override ?? unit.image,
+      name: override?.name ?? unit.name,
+      image: override?.image ?? unit.image,
       rarity: unit.rarity,
       affinity: unit.affinity,
       season: unit.season,
@@ -161,6 +157,7 @@ export async function GET(req: NextRequest) {
       completionPct:
         totalCount > 0 ? Math.round((ownedCount / totalCount) * 1000) / 10 : 0,
     },
+    affinityLabels: Object.fromEntries(affinityLabelMap),
     units,
   });
 }

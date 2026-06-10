@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
-  title: "GFC Back Office",
-  description: "Gaming-First Collection — operator back office",
+  title: "Gaming First Collection",
+  description: "Gaming-First Collection — play, battle, win",
 };
 
 export default function RootLayout({
@@ -26,9 +22,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full`}
+      className={`${outfit.variable} dark h-full`}
     >
-      <body className="h-full antialiased">
+      <body className="h-full antialiased font-[family-name:var(--font-outfit)]">
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>

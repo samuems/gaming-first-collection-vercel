@@ -9,6 +9,7 @@ import {
   MessageCircle, HelpCircle, Star, ChevronRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ArenaModal } from './ArenaModal'
 
 const MAIN_NAV = [
   { href: '/play',            label: 'Lobby',         icon: Home,       exact: true },
@@ -17,10 +18,10 @@ const MAIN_NAV = [
 ]
 
 const BATTLE_NAV = [
-  { href: '/play/arena', label: 'Battle Arena', icon: Swords,     hot: true },
-  { href: '/play/log',   label: 'Battle Log',   icon: ScrollText },
-  { href: '#',           label: 'Tournaments',  icon: Trophy,     soon: true },
-  { href: '#',           label: 'Leaderboard',  icon: TrendingUp, soon: true },
+  { href: '#',         label: 'Battle Arena', icon: Swords,     hot: true,  isArena: true },
+  { href: '/play/log', label: 'Battle Log',   icon: ScrollText },
+  { href: '#',         label: 'Tournaments',  icon: Trophy,     soon: true },
+  { href: '#',         label: 'Leaderboard',  icon: TrendingUp, soon: true },
 ]
 
 const CASINO_NAV = [
@@ -38,10 +39,10 @@ const BOTTOM_NAV = [
 
 type NavItem = {
   href: string; label: string; icon: React.ElementType
-  hot?: boolean; soon?: boolean; badge?: number; exact?: boolean
+  hot?: boolean; soon?: boolean; badge?: number; exact?: boolean; isArena?: boolean
 }
 
-function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
+function NavLink({ item, onClick, onArena }: { item: NavItem; onClick?: () => void; onArena?: () => void }) {
   const pathname = usePathname()
   const active = item.exact
     ? pathname === item.href
@@ -57,6 +58,19 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
     )
   }
 
+  if (item.isArena) {
+    return (
+      <button
+        onClick={() => { onArena?.(); onClick?.() }}
+        className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 select-none group text-amber-400 hover:bg-amber-500/8 hover:text-amber-300"
+      >
+        <item.icon className="size-4 shrink-0 text-amber-400" />
+        <span className="flex-1 text-left">{item.label}</span>
+        <span className="text-[8px] font-black tracking-wider text-amber-500 bg-amber-500/15 border border-amber-500/25 px-1.5 py-0.5 rounded">HOT</span>
+      </button>
+    )
+  }
+
   return (
     <Link
       href={item.href}
@@ -65,22 +79,16 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
         'flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 select-none group',
         active
           ? 'bg-amber-500/10 text-amber-300 font-semibold'
-          : item.hot
-          ? 'text-amber-400 hover:bg-amber-500/8 hover:text-amber-300'
           : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200',
       )}
     >
-      {/* Active indicator bar */}
       {active && <div className="absolute left-0 w-0.5 h-5 bg-amber-400 rounded-r-full" />}
-      <item.icon className={cn('size-4 shrink-0', active ? 'text-amber-400' : item.hot ? 'text-amber-400' : 'text-zinc-600 group-hover:text-zinc-400')} />
+      <item.icon className={cn('size-4 shrink-0', active ? 'text-amber-400' : 'text-zinc-600 group-hover:text-zinc-400')} />
       <span className="flex-1">{item.label}</span>
       {item.badge != null && (
         <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white px-1">
           {item.badge}
         </span>
-      )}
-      {item.hot && !active && (
-        <span className="text-[8px] font-black tracking-wider text-amber-500 bg-amber-500/15 border border-amber-500/25 px-1.5 py-0.5 rounded">HOT</span>
       )}
     </Link>
   )
@@ -98,20 +106,36 @@ function Divider({ label }: { label: string }) {
 export function PlayShell({
   playerId,
   operatorName,
+  lineupReady,
+  wins,
+  losses,
   children,
 }: {
   playerId: string | null
   operatorName: string | null
+  lineupReady: boolean
+  wins: number
+  losses: number
   children: React.ReactNode
 }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [arenaOpen, setArenaOpen] = useState(false)
 
   if (pathname === '/play/setup') return <>{children}</>
 
   const initial = playerId ? playerId[0].toUpperCase() : '?'
 
   return (
+    <>
+    <ArenaModal
+      isOpen={arenaOpen}
+      onClose={() => setArenaOpen(false)}
+      playerName={playerId ?? 'Player'}
+      initialWins={wins}
+      initialLosses={losses}
+      lineupReady={lineupReady}
+    />
     <div className="min-h-screen flex bg-[#0d0d18]">
       {/* ── Sidebar ────────────────────────────────────────────────── */}
       <aside
@@ -201,7 +225,7 @@ export function PlayShell({
 
           <Divider label="Card Battle" />
           {BATTLE_NAV.map((item) => (
-            <NavLink key={item.label} item={item} onClick={() => setOpen(false)} />
+            <NavLink key={item.label} item={item} onClick={() => setOpen(false)} onArena={() => setArenaOpen(true)} />
           ))}
 
           <Divider label="Casino" />
@@ -254,5 +278,6 @@ export function PlayShell({
         <main className="flex-1">{children}</main>
       </div>
     </div>
+    </>
   )
 }

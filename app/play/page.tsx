@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
 import { getSession } from './lib/session'
 import { createServiceClient } from '@/lib/supabase/service'
-import type { Unit, PlayerUnit, Lineup, OperatorUnitOverride, BattleLog, Rarity, Affinity } from '@/types/database'
-// Note: allUnits still fetched to get totalCount for My Cards progress
+import { buildOverrideMap, buildAffinityLabelMap } from '@/lib/game/resolveOverrides'
+import type { Unit, PlayerUnit, Lineup, BattleLog, Rarity, Affinity, Operator } from '@/types/database'
 import { LobbyClient } from './_components/LobbyClient'
 
 export const revalidate = 0
@@ -18,23 +18,25 @@ export default async function LobbyPage() {
     { data: lineupRaw },
     { data: logsRaw },
     { data: unitsRaw },
-    { data: overridesRaw },
+    { data: operatorRaw },
   ] = await Promise.all([
     supabase.from('player_units').select('*').eq('operator_id', session.operatorId).eq('player_id', session.playerId),
     supabase.from('lineups').select('*').eq('operator_id', session.operatorId).eq('player_id', session.playerId).single(),
     supabase.from('battle_logs').select('result').eq('operator_id', session.operatorId).eq('player_id', session.playerId).is('tournament_id', null),
     supabase.from('units').select('*').order('name'),
-    supabase.from('operator_unit_overrides').select('*').eq('operator_id', session.operatorId),
+    supabase.from('operators').select('theme_id').eq('id', session.operatorId).single(),
   ])
 
   const playerUnits = (puRaw ?? []) as PlayerUnit[]
   const lineup = lineupRaw as Lineup | null
   const logs = (logsRaw ?? []) as Pick<BattleLog, 'result'>[]
   const allUnits = (unitsRaw ?? []) as Unit[]
-  const overrides = (overridesRaw ?? []) as OperatorUnitOverride[]
+  const themeId = (operatorRaw as { theme_id: string | null } | null)?.theme_id ?? null
 
-  const overrideMap = new Map<string, OperatorUnitOverride>()
-  for (const ov of overrides) overrideMap.set(ov.unit_id, ov)
+  const [overrideMap, affinityLabels] = await Promise.all([
+    buildOverrideMap(supabase, session.operatorId, themeId),
+    buildAffinityLabelMap(supabase, themeId),
+  ])
 
   const unitMap = new Map<string, Unit>()
   for (const u of allUnits) unitMap.set(u.id, u)
@@ -59,8 +61,8 @@ export default async function LobbyPage() {
       const ov = overrideMap.get(unit.id)
       return {
         unitId: unit.id,
-        name: ov?.name_override ?? unit.name,
-        image: ov?.image_override ?? unit.image,
+        name: ov?.name ?? unit.name,
+        image: ov?.image ?? unit.image,
         rarity: unit.rarity as Rarity,
         affinity: unit.affinity as Affinity,
         power: pu.current_power,
@@ -83,6 +85,7 @@ export default async function LobbyPage() {
       ownedCards={ownedCards}
       ownedCount={playerUnits.length}
       totalCount={allUnits.length}
+      affinityLabels={Object.fromEntries(affinityLabels) as Partial<Record<Affinity, string>>}
     />
   )
 }

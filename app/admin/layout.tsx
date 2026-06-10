@@ -12,6 +12,7 @@ import {
   Gift,
   ChevronRight,
   Shield,
+  Layers,
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,7 +34,8 @@ const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/operators", label: "Operators", icon: Building2 },
   { href: "/admin/units", label: "Units", icon: Swords },
-  { href: "/admin/theme", label: "Theme", icon: Palette },
+  { href: "/admin/themes", label: "Themes",      icon: Layers },
+  { href: "/admin/theme",  label: "Theme Config", icon: Palette },
   { href: "/admin/tournaments", label: "Tournaments", icon: Trophy },
   { href: "/admin/chest", label: "Chest Rewards", icon: Gift },
   { href: "/admin/matches", label: "1v1 Matches", icon: Shield },

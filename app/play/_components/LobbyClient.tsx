@@ -111,10 +111,15 @@ const CLASSIC      = SLOT_GAMES.filter((g) => !g.src.includes('hold-and-win') &&
 
 // ── Card Detail Modal ──────────────────────────────────────────────────────────
 
-function CardDetailModal({ card, onClose }: { card: OwnedCard; onClose: () => void }) {
+function CardDetailModal({
+  card, onClose, affinityLabels,
+}: {
+  card: OwnedCard; onClose: () => void; affinityLabels: Partial<Record<Affinity, string>>
+}) {
   const r = RARITY_CFG[card.rarity]
   const Icon = AFF_ICON[card.affinity]
   const affColor = AFF_COLOR[card.affinity]
+  const affLabel = affinityLabels[card.affinity] ?? card.affinity
 
   const maxStat = 100
   const powerPct = Math.min(100, Math.round((card.power / maxStat) * 100))
@@ -178,7 +183,7 @@ function CardDetailModal({ card, onClose }: { card: OwnedCard; onClose: () => vo
                 </span>
                 <div className={cn('flex items-center gap-1 text-[11px] font-semibold', affColor)}>
                   <Icon className="size-3.5" />
-                  {card.affinity}
+                  {affLabel}
                 </div>
               </div>
             </div>
@@ -352,10 +357,11 @@ function GameSection({ title, icon, games, viewAllHref }: {
 // ── Main Lobby ────────────────────────────────────────────────────────────────
 
 export function LobbyClient({
-  playerName, wins, losses, lineupReady, ownedCards, ownedCount, totalCount,
+  playerName, wins, losses, lineupReady, ownedCards, ownedCount, totalCount, affinityLabels = {},
 }: {
   playerName: string; wins: number; losses: number; lineupReady: boolean
   ownedCards: OwnedCard[]; ownedCount: number; totalCount: number
+  affinityLabels?: Partial<Record<Affinity, string>>
 }) {
   const [arenaOpen, setArenaOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<OwnedCard | null>(null)
@@ -378,7 +384,7 @@ export function LobbyClient({
       />
 
       {selectedCard && (
-        <CardDetailModal card={selectedCard} onClose={() => setSelectedCard(null)} />
+        <CardDetailModal card={selectedCard} onClose={() => setSelectedCard(null)} affinityLabels={affinityLabels} />
       )}
 
       {/* ── Max-width container ─────────────────────────────────────── */}
@@ -479,7 +485,7 @@ export function LobbyClient({
             }}
           >
             <img
-              src="/Logo/TournamentBanner.png"
+              src="/Logo/Tournamentbanner.png"
               alt="Card Battle Tournament"
               className="w-full h-auto block"
             />

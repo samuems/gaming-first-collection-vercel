@@ -6,7 +6,18 @@
       "PowerShell(Get-ChildItem \"c:\\\\Users\\\\home\\\\gaming-first-collection\" -Recurse -Directory | Where-Object { $_.Name -in @\\('slottiles','logo','slots','tiles'\\) } | Select-Object FullName)",
       "PowerShell($slots = Get-ChildItem \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\\\\SlotTiles\"; Write-Host \"SlotTiles count: $\\($slots.Count\\)\"; $logo = Get-ChildItem \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\\\\Logo\"; Write-Host \"Logo count: $\\($logo.Count\\)\"; $logo | ForEach-Object { $_.Name })",
       "PowerShell(Get-ChildItem \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\" -Recurse -File | Where-Object { $_.Extension -in @\\('.png','.jpg','.jpeg','.webp','.svg'\\) } | Select-Object Name, DirectoryName | Sort-Object DirectoryName, Name)",
-      "PowerShell(Rename-Item \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\\\\Logo\\\\Logo \\(3\\).png\" \"logo.png\")"
+      "PowerShell(Rename-Item \"c:\\\\Users\\\\home\\\\gaming-first-collection\\\\public\\\\Logo\\\\Logo \\(3\\).png\" \"logo.png\")",
+      "Bash(npx vercel *)",
+      "Bash(node -e ' *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(npx supabase *)",
+      "Bash(node scripts/generate-nfl-theme.mjs)",
+      "Bash(Read \"C:\\\\Users\\\\home\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-home-gaming-first-collection\\\\608b3c0b-8308-43c1-94ab-bc0311b7e461\\\\tasks\\\\bgnyxhjuk.output\")",
+      "PowerShell(npx vercel inspect \"https://gaming-first-collection-m4gogymkf-convertfy-s-projects.vercel.app\" 2>&1)",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\home\\gaming-first-collection\\app\\play\\arena\\watch"
