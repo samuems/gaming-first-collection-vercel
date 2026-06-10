@@ -7,7 +7,7 @@ import {
   Wind, Mountain, Zap, Waves, Flame, Snowflake, Leaf, Sun, Moon,
   ChevronLeft, ChevronRight, Shield,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, parseAffinityLabel } from '@/lib/utils'
 import type { Rarity, Affinity } from '@/types/database'
 import { ArenaModal } from './ArenaModal'
 
@@ -119,7 +119,8 @@ function CardDetailModal({
   const r = RARITY_CFG[card.rarity]
   const Icon = AFF_ICON[card.affinity]
   const affColor = AFF_COLOR[card.affinity]
-  const affLabel = affinityLabels[card.affinity] ?? card.affinity
+  const rawLabel = affinityLabels[card.affinity] ?? card.affinity
+  const { emoji, text: affText } = parseAffinityLabel(rawLabel)
 
   const maxStat = 100
   const powerPct = Math.min(100, Math.round((card.power / maxStat) * 100))
@@ -182,8 +183,11 @@ function CardDetailModal({
                   {card.rarity.toUpperCase()}
                 </span>
                 <div className={cn('flex items-center gap-1 text-[11px] font-semibold', affColor)}>
-                  <Icon className="size-3.5" />
-                  {affLabel}
+                  {emoji
+                    ? <span className="text-sm leading-none">{emoji}</span>
+                    : <Icon className="size-3.5" />
+                  }
+                  {affText}
                 </div>
               </div>
             </div>

@@ -8,7 +8,7 @@ import {
 import type { BattleRound, BattleResult, Affinity, Rarity } from '@/types/database'
 import type { UnitMeta } from './actions'
 type AffinityLabels = Partial<Record<Affinity, string>>
-import { cn } from '@/lib/utils'
+import { cn, parseAffinityLabel } from '@/lib/utils'
 
 // ── Configs ───────────────────────────────────────────────────────────────────
 
@@ -89,7 +89,8 @@ function ArenaCard({
   const r = RARITY_CFG[rarity]
   const aff = AFF[unit.affinity]
   const AffinityIcon = aff.icon
-  const affLabel = affinityLabels[unit.affinity] ?? unit.affinity
+  const rawLabel = affinityLabels[unit.affinity] ?? unit.affinity
+  const { emoji, text: affText } = parseAffinityLabel(rawLabel)
 
   return (
     <div
@@ -106,8 +107,11 @@ function ArenaCard({
       {/* Affinity pill */}
       <div className="flex items-center justify-between px-2 pt-1.5 pb-1">
         <span className={cn('inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold border', aff.bg)}>
-          <AffinityIcon className={cn('size-2.5', aff.color)} />
-          <span className={aff.color}>{affLabel}</span>
+          {emoji
+            ? <span className="text-[11px] leading-none">{emoji}</span>
+            : <AffinityIcon className={cn('size-2.5', aff.color)} />
+          }
+          <span className={aff.color}>{affText}</span>
         </span>
         <span className="text-[9px] font-bold text-zinc-500">Lv{unit.level}</span>
       </div>

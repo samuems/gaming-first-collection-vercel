@@ -14,7 +14,7 @@ import {
   Sword, Timer, Star, Lock,
 } from 'lucide-react'
 import type { Affinity, Rarity } from '@/types/database'
-import { cn } from '@/lib/utils'
+import { cn, parseAffinityLabel } from '@/lib/utils'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -110,7 +110,8 @@ function UnitCardThumb({
   const r = RARITY_CFG[unit.rarity]
   const a = AFFINITY_CFG[unit.affinity]
   const AffinityIcon = a.icon
-  const affLabel = affinityLabels[unit.affinity] ?? unit.affinity
+  const rawLabel = affinityLabels[unit.affinity] ?? unit.affinity
+  const { emoji, text: affText } = parseAffinityLabel(rawLabel)
 
   return (
     <article
@@ -125,8 +126,11 @@ function UnitCardThumb({
       {/* Affinity pill */}
       <div className="flex items-center justify-between px-2 pt-1.5 pb-1">
         <span className={cn('inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold', a.bg)}>
-          <AffinityIcon className={cn('size-2.5', a.color)} />
-          <span className={a.color}>{affLabel}</span>
+          {emoji
+            ? <span className="text-[10px] leading-none">{emoji}</span>
+            : <AffinityIcon className={cn('size-2.5', a.color)} />
+          }
+          <span className={a.color}>{affText}</span>
         </span>
         {unit.owned && unit.level > 1 && (
           <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-400">
@@ -197,7 +201,8 @@ function CardDetailSheet({
   const r = RARITY_CFG[unit.rarity]
   const a = AFFINITY_CFG[unit.affinity]
   const AffinityIcon = a.icon
-  const affLabel = affinityLabels[unit.affinity] ?? unit.affinity
+  const rawLabel = affinityLabels[unit.affinity] ?? unit.affinity
+  const { emoji, text: affText } = parseAffinityLabel(rawLabel)
 
   const copiesNeeded = unit.copiesForNextLevel
   const copyPct = copiesNeeded ? Math.round((unit.copiesOwned / copiesNeeded) * 100) : 100
@@ -232,8 +237,11 @@ function CardDetailSheet({
             {/* Affinity + Season */}
             <div className="flex items-center gap-2">
               <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold', a.bg)}>
-                <AffinityIcon className={cn('size-3', a.color)} />
-                <span className={a.color}>{affLabel}</span>
+                {emoji
+                  ? <span className="text-sm leading-none">{emoji}</span>
+                  : <AffinityIcon className={cn('size-3', a.color)} />
+                }
+                <span className={a.color}>{affText}</span>
               </span>
               <Badge variant="outline" className="text-xs text-zinc-400 border-zinc-700">
                 Season {unit.season}
