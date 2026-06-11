@@ -209,7 +209,7 @@ function CardDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent side="right" className="w-80 bg-zinc-950 border-zinc-800 p-0 overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:w-80 bg-zinc-950 border-zinc-800 p-0 overflow-y-auto">
         <div className={cn('flex flex-col gap-0', r.cardBg, 'min-h-full')}>
           {/* Header */}
           <SheetHeader className="px-5 pt-5 pb-3">
@@ -334,7 +334,7 @@ export function CollectionGrid({
       </p>
 
       {/* Grid */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
         {units.map((unit) => (
           <UnitCardThumb
             key={unit.unitId}

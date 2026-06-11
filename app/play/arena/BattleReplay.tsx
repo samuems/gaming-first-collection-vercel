@@ -95,7 +95,7 @@ function ArenaCard({
   return (
     <div
       className={cn(
-        'relative flex flex-col rounded-2xl overflow-hidden w-36 transition-all duration-700',
+        'relative flex flex-col rounded-2xl overflow-hidden w-[38vw] max-w-[144px] transition-all duration-700',
         r.cardBg, r.outerBorder,
         won
           ? cn(r.glowClass, 'scale-105 ring-2 ring-emerald-400 shadow-[0_0_40px_rgba(52,211,153,0.35)]')
@@ -180,7 +180,7 @@ function DeckThumb({
     <button
       onClick={onClick}
       className={cn(
-        'relative flex flex-col rounded-xl overflow-hidden w-14 transition-all duration-300 border-2',
+        'relative flex flex-col rounded-xl overflow-hidden w-10 sm:w-14 transition-all duration-300 border-2',
         active
           ? 'border-white scale-110 shadow-lg'
           : won === true
@@ -477,12 +477,12 @@ export function BattleReplay({
         {/* BATTLE STARTS! */}
         {phase === 'starting' && (
           <div className="flex flex-col items-center gap-5 animate-pulse">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-amber-900/30 border-2 border-amber-700/40 shadow-[0_0_50px_rgba(180,83,9,0.45)]">
-              <Swords className="size-12 text-amber-400" />
+            <div className="flex h-16 w-16 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-amber-900/30 border-2 border-amber-700/40 shadow-[0_0_50px_rgba(180,83,9,0.45)]">
+              <Swords className="size-8 sm:size-12 text-amber-400" />
             </div>
             <div className="text-center">
-              <p className="text-5xl font-black tracking-widest text-amber-400 drop-shadow-[0_0_24px_rgba(251,191,36,0.7)]">BATTLE</p>
-              <p className="text-5xl font-black tracking-widest text-amber-300 drop-shadow-[0_0_24px_rgba(251,191,36,0.6)] -mt-1">STARTS!</p>
+              <p className="text-3xl sm:text-5xl font-black tracking-widest text-amber-400 drop-shadow-[0_0_24px_rgba(251,191,36,0.7)]">BATTLE</p>
+              <p className="text-3xl sm:text-5xl font-black tracking-widest text-amber-300 drop-shadow-[0_0_24px_rgba(251,191,36,0.6)] -mt-1">STARTS!</p>
             </div>
           </div>
         )}
@@ -506,8 +506,8 @@ export function BattleReplay({
               <Trophy className="size-20 text-amber-400 drop-shadow-[0_0_36px_rgba(251,191,36,0.7)]" />
             )}
             <div className="text-center">
-              <p className={cn('text-5xl font-black tracking-widest', RC.text, RC.shadow)}>{RC.label}</p>
-              <p className="text-zinc-400 mt-2 text-lg">
+              <p className={cn('text-3xl sm:text-5xl font-black tracking-widest', RC.text, RC.shadow)}>{RC.label}</p>
+              <p className="text-zinc-400 mt-2 text-base sm:text-lg">
                 <span className="font-black text-white">{playerRoundsWon}</span>
                 <span className="mx-2 text-zinc-600">–</span>
                 <span className="font-black text-zinc-400">{opponentRoundsWon}</span>

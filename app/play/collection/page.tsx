@@ -111,7 +111,7 @@ export default async function CollectionPage({
     <div className="flex flex-col min-h-[calc(100vh-56px)]">
       <div className="flex-1 px-4 py-6 max-w-7xl mx-auto w-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
             <h1 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
               <Layers className="size-5 text-indigo-400" />

@@ -96,7 +96,7 @@ export function LineupBuilder({
           <span className="text-xs text-zinc-500">{filledCount} / 5</span>
         </div>
 
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-5 gap-1.5">
           {Array.from({ length: 5 }).map((_, i) => {
             const unit = slotUnits[i]
             return (
@@ -124,7 +124,7 @@ export function LineupBuilder({
                     {/* Remove button */}
                     <button
                       onClick={() => removeSlot(i)}
-                      className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 hover:bg-red-600/80 transition-colors"
+                      className="absolute top-0.5 right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 hover:bg-red-600/80 transition-colors"
                     >
                       <X className="size-3 text-white" />
                     </button>
@@ -188,7 +188,7 @@ export function LineupBuilder({
         <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-3">
           Available Cards ({ownedUnits.length})
         </h2>
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
           {ownedUnits.map((unit) => {
             const inDeck = deckIds.has(unit.unitId)
             const AffinityIcon = AFFINITY_CFG[unit.affinity].icon
